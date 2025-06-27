@@ -31,7 +31,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False 
 
-ALLOWED_HOSTS = ["https://praise-and-worship-scheduler.onrender.com"]
+ALLOWED_HOSTS = ["praise-and-worship-scheduler.onrender.com"]
 
 
 # Application definition
