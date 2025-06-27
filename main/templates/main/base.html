@@ -1,0 +1,247 @@
+<html>
+	{% load static %}
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+	<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+	<style type="text/css">
+		.displayUser {
+			color: #ccc;
+			font-size: 1.1rem;
+			font-weight: 500;
+			padding: 12px 20px;
+			margin: 0;
+		}
+		.displayUser:hover {
+			color: #fff;
+			background-color: #2e2e2e;
+			border-left: 4px solid #354adc;
+			cursor: default;
+		}
+
+		/* Simple responsive navigation */
+		.navbar {
+			background-color: #1c1c1c;
+			padding: 1rem;
+			position: sticky;
+			top: 0;
+			z-index: 1000;
+			display: flex;
+			align-items: center;
+		}
+
+		.navbar-left {
+			width: 200px;
+			flex-shrink: 0;
+		}
+
+		.navbar-center {
+			flex: 1;
+			display: flex;
+			justify-content: center;
+			gap: 2rem;
+			align-items: center;
+		}
+
+		.navbar-right {
+			width: 200px;
+			flex-shrink: 0;
+			display: flex;
+			justify-content: flex-end;
+			align-items: center;
+		}
+
+		.navbar a,
+		.navbar button {
+			color: #ccc;
+			text-decoration: none;
+			padding: 0.5rem 1rem;
+			border-radius: 4px;
+			transition: all 0.2s ease;
+			background: none;
+			border: none;
+			font-size: 1rem;
+			cursor: pointer;
+		}
+
+		.navbar a:hover,
+		.navbar button:hover {
+			color: #fff;
+			background-color: #354adc;
+		}
+
+		.user-greeting {
+			color: #ccc;
+			font-weight: 500;
+			margin: 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.main {
+			padding: 30px;
+		}
+
+		/* Mobile adjustments */
+		@media (max-width: 768px) {
+			.navbar {
+				flex-direction: column;
+				gap: 1rem;
+			}
+			
+			.navbar-left,
+			.navbar-center,
+			.navbar-right {
+				width: auto;
+				justify-content: center;
+			}
+			
+			.navbar-center {
+				gap: 1rem;
+				order: 2;
+			}
+			
+			.navbar-right {
+				order: 3;
+			}
+			
+			.main {
+				padding: 20px 15px;
+			}
+		}
+
+		/* Remove unused sidebar styles */
+
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background-color: #f8f9fa;
+		}
+
+		/* Responsive header */
+		.main h1 {
+			font-size: clamp(1.5rem, 4vw, 3rem);
+			margin-bottom: 1.5rem;
+		}
+
+		/* Cards responsive design */
+		.bg-danger-dark {
+			background-color: #7B241C;
+			color: #fff;
+		}
+		.btn-danger-dark {
+			background-color: #7B241C;
+			color: #fff;
+			border: none;
+		}
+		.btn-danger-dark:hover {
+			background-color: #641E16; 
+		}
+		.bg-warning-dark {
+			background-color: #deda60;
+			color: #fff;
+		}
+		.btn-warning-dark {
+			background-color: #deda60;
+			color: #fff;
+		}
+		.btn-warning-dark:hover {
+			background-color: #dad670;
+		}
+		.bg-primary-dark {
+			background-color: #354adc;
+			color: #fff;
+		}
+		.btn-primary-dark {
+			background-color: #354adc;
+			color: #fff;
+		}
+		.btn-primary-dark:hover {
+			background-color: #2f42c8;
+		}
+		.bg-success-dark {
+			background-color: #108a08;
+			color: #fff;
+		}
+		.btn-success-dark {
+			background-color: #108a08;
+			color: #fff;
+		}
+		.btn-success-dark:hover {
+			background-color: #257a20;
+		}
+
+		.custom-success {
+			background-color: #257a20;
+  			color: #d1e7dd;
+  			border: 1px solid #0c4128;
+		}
+
+		.custom-error {
+			background-color: #7B241C;
+  			color: #f8d7da;
+  			border: 1px solid #6a1b21;
+		}
+
+		.btn-close {
+			filter: brightness(0.6);  
+		}
+		.btn-close:hover {
+			filter: brightness(1);  
+			cursor: pointer;
+		}
+
+		/* Responsive utilities */
+		@media (max-width: 576px) {
+			.container {
+				padding-left: 10px;
+				padding-right: 10px;
+			}
+		}
+	</style>
+	<title>{% block title %}Base{% endblock %}</title>
+</head>
+ 
+<body>
+	<nav class="navbar">
+		<div class="navbar-left">
+			{% if request.user.is_authenticated %}
+				<span class="user-greeting">Hello {{request.user.username}}</span>
+			{% else %}
+				<span class="user-greeting">Please login</span>
+			{% endif %}
+		</div>
+		
+		<div class="navbar-center">
+			<a href="/">Home</a>
+			<a href="/schedule">Schedule</a>
+			<a href="/edit">Edit</a>
+			<a href="/songs">Songs</a>
+		</div>
+		
+		<div class="navbar-right">
+			{% if not request.user.is_authenticated %}
+				<a href="/accounts/login">Login</a>
+			{% else %}
+				<form method="post" action="{% url 'logout' %}" style="margin: 0;">
+					{% csrf_token %}
+					<button type="submit">Logout</button>
+				</form>
+			{% endif %}
+		</div>
+	</nav>
+    
+    <div class="main">
+		<div class="container text-center">
+    		<h1 class="fw-bold display-5 text-dark">
+      			{% block header %}Schedule Page{% endblock %}
+    		</h1>
+  		</div>
+        {% block content %}
+    	{% endblock %}
+    </div>
+	
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+</body>
+</html>

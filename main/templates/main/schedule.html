@@ -1,0 +1,73 @@
+{% extends "main/base.html" %}
+
+{% block title %}Schedule{% endblock %}
+{% block header %}
+<div class="container mt-4 text-center">
+  <h2 class="fw-bold text-dark border-bottom pb-2 mb-4">📅 Schedule Page</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4 text-center">
+  <h2 class="fw-bold text-dark border-bottom pb-2 mb-4">Upcoming Schedules</h2>
+</div>
+
+<!-- Show all upcoming schedules and songs, soonest one is first-->
+<div class="container d-flex justify-content-center mt-5">
+  <div class="row justify-content-center w-100" style="max-width: 800px;">
+    {% for schedule in upcoming_schedules %}
+      <div class="col-12 mb-4">
+        <div class="card shadow text-center">
+          <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <span class="fw-bold">{{ schedule.date|date:"m-d-Y" }}</span>
+            <div class="dropdown">
+              <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Songs
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% for song in schedule.songs.all %}
+                  <li><a class="dropdown-item" href="#">{{ song.name }}</a></li>
+                {% empty %}
+                  <li><span class="dropdown-item text-muted">No songs</span></li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="container mt-4 text-center">
+  <h2 class="fw-bold text-dark border-bottom pb-2 mb-4">Past Schedules</h2>
+</div>
+
+<!-- Show all past schedules, most recent one is first -->
+<div class="container d-flex justify-content-center mt-5">
+  <div class="row justify-content-center w-100" style="max-width: 800px;">
+    {% for schedule in past_schedules %}
+      <div class="col-12 mb-4">
+        <div class="card shadow text-center">
+          <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <span class="fw-bold">{{ schedule.date|date:"m-d-Y" }}</span>
+            <div class="dropdown">
+              <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Songs
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% for song in schedule.songs.all %}
+                  <li><a class="dropdown-item" href="#">{{ song.name }}</a></li>
+                {% empty %}
+                  <li><span class="dropdown-item text-muted">No songs</span></li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "main/base.html" %}
+
+{% block title %}Edit{% endblock %}
+{% block header %}
+<div class="container mt-4 text-center">
+  <h2 class="fw-bold text-dark border-bottom pb-2 mb-4">📝 Edit Page</h2>
+</div>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- Displays the error/success message if given-->
+{% if messages %}
+    {% for message in messages %}
+      <div class="alert custom-{{message.tags}} alert-dismissible fade show mt-3" role="alert">
+        {{message}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Only logged in users can edit schedules -->
+{% if user.is_authenticated %}
+
+  <div class="container mt-4">
+    <!-- Add Schedule Card -->
+    <div class="card mb-5 shadow">
+      <div class="card-header bg-success-dark fw-bold">Add a New Schedule</div>
+      <div class="card-body">
+        <form method="post" autocomplete="off">
+          {% csrf_token %}
+          <div class="mb-3">
+            {{ new_schedule.date.label_tag }}
+            {{ new_schedule.date }}
+          </div>
+          
+          <!-- Allows song choices, users can still type invalid song names-->
+          <div class="mb-3">
+            <label class="form-label">Choose the first song:</label>
+            <input name="first_song_dropdown" list="songs_list" class="form-control" placeholder="Choose from here">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Choose the second song:</label>
+            <input name="second_song_dropdown" list="songs_list" class="form-control" placeholder="Choose from here">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Choose the third song:</label>
+            <input name="third_song_dropdown" list="songs_list" class="form-control" placeholder="Choose from here">
+          </div>
+
+          <datalist id="songs_list">
+            {% for song in songs %}
+              <option>{{ song.name }}</option>
+            {% endfor %}
+          </datalist>
+
+          <button type="submit" name="addScheduleBtn" class="btn btn-success-dark" value="Add">Add Schedule</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Schedule Card -->
+    <div class="card mb-5 shadow">
+      <div class="card-header bg-danger-dark text-white fw-bold">Delete a Schedule</div>
+      <div class="card-body">
+        <form method="post" autocomplete="off">
+          {% csrf_token %}
+          <div class="mb-3">
+
+            <!-- Allows user to choose schedule to delete, user can still type in invalid schedule-->
+            <label class="form-label">Select a schedule to delete:</label>
+            <input name="schedule_dropdown" list="schedule_list" class="form-control" placeholder="Choose from here">
+          </div>
+
+          <datalist id="schedule_list">
+            {% for schedule in schedules %}
+              <option>{{ schedule.date|date:"m-d-Y" }}</option>
+            {% endfor %}
+          </datalist>
+
+          <button type="submit" name="deleteScheduleBtn" class="btn btn-danger-dark" value="Delete">Delete Schedule</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% else %}
+<div class="container mt-4 text-center">
+  <h2 class="fw-bold text-dark pb-2 mb-4">Please Login to Access This Page</h2>
+</div>
+{% endif %}
+
+{% endblock %}
