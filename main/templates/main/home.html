@@ -1,0 +1,25 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+{% block header %}
+<div class="container mt-4 text-center">
+  <h2 class="fw-bold text-dark border-bottom pb-2 mb-4">🕆 Home Page</h2>
+</div>
+{% endblock %}
+
+
+{% block content %}
+<div class="container text-center mt-5">
+
+  <!-- Show the youth group image -->
+  <img src="{% static 'images/youth_group.jpg' %}" class="img-fluid rounded shadow mb-4" alt="Praise and Worship" style="max-height: 400px; object-fit: cover;">
+
+  <!-- Welcome text -->
+  <h1 class="fw-bold">Welcome to the Praise and Worship Scheduler</h1>
+  <p class="lead mt-3">
+    This tool is built for GBC Rockville's English Service to help organize weekly songs and schedules.
+  </p>
+
+</div>
+{% endblock %}

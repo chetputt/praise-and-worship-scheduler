@@ -1,0 +1,11 @@
+.env.local
+.env.production
+db.sqlite3
+.coverage
+
+# Python
+env/
+*.pyc
+__pycache__/
+
+/staticfiles/

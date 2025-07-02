@@ -1,0 +1,50 @@
+{% extends "main/base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block header %}
+<div class="container mt-4 text-center">
+  <h2 class="fw-bold text-dark border-bottom pb-2 mb-4">🔐 Login Page</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center mt-5">
+  <div class="card shadow p-4" style="max-width: 400px; width: 100%;">
+    <form method="post" autocomplete="off">
+      {% csrf_token %}
+
+      <!-- Username input -->
+      <div class="mb-3 text-start">
+        <label for="userInput" class="form-label fw-bold">Username</label>
+        <input type="text" name="userInput" class="form-control" id="userInput" required>
+      </div>
+
+      <!-- Password input -->
+      <div class="mb-3 text-start">
+        <label for="passInput" class="form-label fw-bold">Password</label>
+        <input type="password" name="passInput" class="form-control" id="passInput" required>
+      </div>
+
+      <!-- Remember_me input -->
+      <div class="form-check mb-3 text-start">
+        <input class="form-check-input" type="checkbox" name="rememberCheckbox" id="rememberCheckbox">
+        <label class="form-check-label" for="rememberCheckbox">
+          Remember Me
+        </label>
+      </div>
+      
+      <!-- Login button -->
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success">Login</button>
+      </div>
+
+      {% if fail == True %}
+        <div class="alert alert-danger mt-3 text-center" role="alert">
+          Incorrect username or password
+        </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}
