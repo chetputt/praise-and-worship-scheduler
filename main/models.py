@@ -13,7 +13,7 @@ class Schedule(models.Model):
 class Song(models.Model):
     #schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
-    key = models.CharField(max_length=4)
+    key = models.CharField(max_length=10)
     frequency = models.PositiveIntegerField()
     hymn = models.BooleanField()
 
