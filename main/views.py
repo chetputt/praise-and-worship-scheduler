@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login
 from .forms import AddSongTextbox, NewSchedule
 from .models import Song, Schedule
 from datetime import datetime
+import logging
 
 # the edit page view
 def edit(request):
@@ -150,6 +151,9 @@ def songs(request):
 
                 except:
                     messages.error(request, "Failed to add song")
+
+                logger = logging.getLogger(__name__)
+                logger.info(f"POST DATA: {request.POST}")
                 return redirect("songs")
 
         elif "deleteSongBtn" in request.POST:
