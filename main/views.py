@@ -151,7 +151,6 @@ def songs(request):
                 except:
                     messages.error(request, "Failed to add song")
 
-                print("DEBUG:", request.POST)
                 return redirect("songs")
 
         elif "deleteSongBtn" in request.POST:
