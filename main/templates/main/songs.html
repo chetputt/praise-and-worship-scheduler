@@ -30,6 +30,7 @@
         <th>Key</th>
         <th>Frequency</th>
         <th>Hymn</th>
+        <th>Last Scheduled</th>
       </tr>
     </thead>
     <tbody>
@@ -41,10 +42,12 @@
         <td>{{ song.frequency }}</td>
 
         {% if song.hymn == True %}
-          <td bgcolor="green">Yes</td>
+          <td color="green">Yes</td>
         {% else %}
-          <td bgcolor="red">No</td>
+          <td color="red">No</td>
         {% endif %}
+        <td>{{ song.last_scheduled }}</td>
+
       </tr>
       {% endfor %}
     </tbody>

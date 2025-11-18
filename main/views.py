@@ -43,8 +43,11 @@ def edit(request):
                         new_schedule.songs.add(song3)
 
                         Song.objects.filter(name=song1_name).update(frequency=F("frequency") + 1)
+                        Song.objects.filter(name=song1_name).update(last_scheduled=schedule_date)
                         Song.objects.filter(name=song2_name).update(frequency=F("frequency") + 1)
+                        Song.objects.filter(name=song2_name).update(last_scheduled=schedule_date)
                         Song.objects.filter(name=song3_name).update(frequency=F("frequency") + 1)
+                        Song.objects.filter(name=song3_name).update(last_scheduled=schedule_date)
                         messages.success(request, "Successfully added schedule")
                     else:
                         messages.error(request, "Failed to add schedule: duplicate songs or schedule date already exists")
