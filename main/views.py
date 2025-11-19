@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponseRedirect
-from django.db.models import F
-from django.utils import timezone
+from django.http import JsonResponse
+from django.db.models import F, Q
+from django.utils import timezone   
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from .forms import AddSongTextbox, NewSchedule
 from .models import Song, Schedule
 from datetime import datetime
+from random import choice
 
 # the edit page view
 def edit(request):
@@ -56,6 +57,7 @@ def edit(request):
                     messages.error(request, "Failed to add schedule: invalid song(s)")
                 return redirect("edit")
         
+
         elif "deleteScheduleBtn" in request.POST:
             schedule_date = request.POST.get("schedule_dropdown")
 
@@ -80,6 +82,28 @@ def edit(request):
             return redirect("edit")
         
     return render(request, "main/edit.html", {"schedules": all_schedules, "songs":all_songs, "new_schedule": new_schedule_form})
+
+
+# get random songs to be used for the edit page
+def get_random_songs(request):
+    cutoff = timezone.now().date() - timezone.timedelta(weeks=6)
+
+    # either get 2 hymns, 1 other song or get 1 hymn, 2 other songs
+    if choice([True, False]):
+        hymns = list(Song.objects.filter(Q(last_scheduled__lt=cutoff) | Q(last_scheduled__isnull=True), hymn=True).values_list("name", flat=True).order_by("?")[:2])
+        non_hymn = list(Song.objects.filter(Q(last_scheduled__lt=cutoff) | Q(last_scheduled__isnull=True), hymn=False).values_list("name", flat=True).order_by("?")[:1])
+        chosen_songs = [hymns[0], non_hymn[0], hymns[1]]
+    else:
+        hymns = list(Song.objects.filter(Q(last_scheduled__lt=cutoff) | Q(last_scheduled__isnull=True), hymn=True).values_list("name", flat=True).order_by("?")[:1])
+        non_hymn = list(Song.objects.filter(Q(last_scheduled__lt=cutoff) | Q(last_scheduled__isnull=True), hymn=False).values_list("name", flat=True).order_by("?")[:2])
+        chosen_songs = [non_hymn[0], hymns[0], [non_hymn[1]]]
+        
+    # get the names of the 3 random songs
+    return JsonResponse({
+        "song1": chosen_songs[0],
+        "song2": chosen_songs[1],
+        "song3": chosen_songs[2],
+    })
 
 def home(request):
     return render(request, "main/home.html", {})

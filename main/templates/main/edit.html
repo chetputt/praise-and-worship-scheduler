@@ -56,7 +56,20 @@
           </datalist>
 
           <button type="submit" name="addScheduleBtn" class="btn btn-success-dark" value="Add">Add Schedule</button>
+          <button type="button" id="randomizeBtn" class="btn btn-success-dark" value="Randomize">Randomize Songs</button>
         </form>
+
+        <script>
+            document.getElementById("randomizeBtn").addEventListener("click", async () => {
+                //event.preventDefault();  // prevent form submission
+                const response = await fetch("{% url 'random_songs' %}");
+                const data = await response.json();
+
+                document.querySelector('input[name="first_song_dropdown"]').value = data.song1;
+                document.querySelector('input[name="second_song_dropdown"]').value = data.song2;
+                document.querySelector('input[name="third_song_dropdown"]').value = data.song3;
+            });
+          </script>
       </div>
     </div>
 
