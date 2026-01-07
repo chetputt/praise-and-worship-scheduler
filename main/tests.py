@@ -154,6 +154,18 @@ class EditTests(TestCase):
         self.assertFalse(Schedule.objects.filter(date="2025-06-18").exists())
         self.assertContains(response, "Successfully deleted schedule")
 
+    # test for scheduled and last_scheduled variables of the song model
+    def test_delete_schedule_song_dates(self):
+        Song.objects.filter(name="song1").update(last_scheduled="2025-01-01")
+
+        response = self.client.post(reverse("edit"), {
+            "schedule_dropdown": "06-18-2025",
+            "deleteScheduleBtn": "Delete"
+        }, follow=True)
+
+        # last_scheduled became scheduled now
+        self.assertTrue(str(Song.objects.get(name="song1").scheduled) == "2025-01-01")
+
     def test_empty_schedule(self):
         response = self.client.post(reverse("edit"), {
             "date": "2024-12-12",

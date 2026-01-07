@@ -26,6 +26,7 @@
 			padding: 1rem;
 			position: sticky;
 			top: 0;
+			width: 100%;
 			z-index: 1000;
 			display: flex;
 			align-items: center;
@@ -218,6 +219,7 @@
 			<a href="/schedule">Schedule</a>
 			<a href="/edit">Edit</a>
 			<a href="/songs">Songs</a>
+			<a href="/logs">Logs</a>
 		</div>
 		
 		<div class="navbar-right">
@@ -235,7 +237,7 @@
     <div class="main">
 		<div class="container text-center">
     		<h1 class="fw-bold display-5 text-dark">
-      			{% block header %}Schedule Page{% endblock %}
+      			{% block header %}Base{% endblock %}
     		</h1>
   		</div>
         {% block content %}

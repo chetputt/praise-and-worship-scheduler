@@ -1,0 +1,28 @@
+{% extends "main/base.html"%}
+
+{% block title %}Logs{% endblock %}
+
+{% block header %} 
+    <div class="container mt-4 text-center">
+        <h2 class="fw-bold text-dark border-bottom pb-2 mb-4">📝 Logs</h2>
+    </div>
+{% endblock%}
+
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+            <div class="card" style="height:60vh">
+                <div class="card-body overflow-auto">
+                    <ul class="list-group list-group-flush">
+                        {% for log in all_logs %}
+                            <li class="list-group-item">{{log.user}} {{log.action}} {{log.obj_name}} on {{log.date_of_action}}</li>
+                        {% endfor %}
+                    </ul> 
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

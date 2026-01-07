@@ -5,8 +5,9 @@ from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from .forms import AddSongTextbox, NewSchedule
-from .models import Song, Schedule
+from .models import Song, Schedule, Logs
 from datetime import datetime
+from django.contrib.contenttypes.models import ContentType
 from random import choice
 
 # the edit page view
@@ -25,6 +26,7 @@ def edit(request):
                 # an error should occur if any of the chosen songs doesn't exist (like typed in wrong)
                 try:
                     schedule_date = new_schedule_form.cleaned_data["date"]
+                    formatted_date = schedule_date.strftime("%m-%d-%Y")
 
                     song1_name = request.POST.get("first_song_dropdown")
                     song2_name = request.POST.get("second_song_dropdown")
@@ -44,12 +46,21 @@ def edit(request):
                         new_schedule.songs.add(song3)
 
                         Song.objects.filter(name=song1_name).update(frequency=F("frequency") + 1)
-                        Song.objects.filter(name=song1_name).update(last_scheduled=schedule_date)
+                        old_scheduled_1 = Song.objects.get(name=song1_name).scheduled
+                        Song.objects.filter(name=song1_name).update(last_scheduled=old_scheduled_1)
+                        Song.objects.filter(name=song1_name).update(scheduled=schedule_date)
+
                         Song.objects.filter(name=song2_name).update(frequency=F("frequency") + 1)
-                        Song.objects.filter(name=song2_name).update(last_scheduled=schedule_date)
+                        old_scheduled_2 = Song.objects.get(name=song2_name).scheduled
+                        Song.objects.filter(name=song2_name).update(last_scheduled=old_scheduled_2)
+                        Song.objects.filter(name=song2_name).update(scheduled=schedule_date)
+
                         Song.objects.filter(name=song3_name).update(frequency=F("frequency") + 1)
-                        Song.objects.filter(name=song3_name).update(last_scheduled=schedule_date)
+                        old_scheduled_3 = Song.objects.get(name=song3_name).scheduled
+                        Song.objects.filter(name=song3_name).update(last_scheduled=old_scheduled_3)
+                        Song.objects.filter(name=song3_name).update(scheduled=schedule_date)
                         messages.success(request, "Successfully added schedule")
+                        create_log(request, "added a schedule for", formatted_date)
                     else:
                         messages.error(request, "Failed to add schedule: duplicate songs or schedule date already exists")
                 
@@ -72,38 +83,24 @@ def edit(request):
 
                     if song.frequency >= 1:
                         song.frequency -= 1
+                    
+                    # update the scheduled to get the most recent scheduled (for deleting a schedule,
+                    # makes randomize button work properly)
+                    old_scheduled = song.last_scheduled
+                    song.scheduled = old_scheduled
+                    song.last_scheduled = None
                     song.save()
                 
                 delete_schedule.delete()
                 messages.success(request, "Successfully deleted schedule")
-                
+                create_log(request, "deleted the schedule for", schedule_date)
+
             except:
                 messages.error(request, "Failed to delete schedule")
             return redirect("edit")
         
     return render(request, "main/edit.html", {"schedules": all_schedules, "songs":all_songs, "new_schedule": new_schedule_form})
 
-
-# get random songs to be used for the edit page
-def get_random_songs(request):
-    cutoff = timezone.now().date() - timezone.timedelta(weeks=6)
-
-    # either get 2 hymns, 1 other song or get 1 hymn, 2 other songs
-    if choice([True, False]):
-        hymns = list(Song.objects.filter(Q(last_scheduled__lt=cutoff) | Q(last_scheduled__isnull=True), hymn=True).values_list("name", flat=True).order_by("?")[:2])
-        non_hymn = list(Song.objects.filter(Q(last_scheduled__lt=cutoff) | Q(last_scheduled__isnull=True), hymn=False).values_list("name", flat=True).order_by("?")[:1])
-        chosen_songs = [hymns[0], non_hymn[0], hymns[1]]
-    else:
-        hymns = list(Song.objects.filter(Q(last_scheduled__lt=cutoff) | Q(last_scheduled__isnull=True), hymn=True).values_list("name", flat=True).order_by("?")[:1])
-        non_hymn = list(Song.objects.filter(Q(last_scheduled__lt=cutoff) | Q(last_scheduled__isnull=True), hymn=False).values_list("name", flat=True).order_by("?")[:2])
-        chosen_songs = [non_hymn[0], hymns[0], [non_hymn[1]]]
-        
-    # get the names of the 3 random songs
-    return JsonResponse({
-        "song1": chosen_songs[0],
-        "song2": chosen_songs[1],
-        "song3": chosen_songs[2],
-    })
 
 def home(request):
     return render(request, "main/home.html", {})
@@ -158,7 +155,7 @@ def songs(request):
                 song_name = add_song_form.cleaned_data["name"].strip()
 
                 # no duplicate or empty song names can exist
-                if Song.objects.filter(name__iexact=song_name).exists() or song_name == "":
+                if Song.objects.filter(name__iexact=song_name).exists() or song_name.strip() == "":
                     messages.error(request, "There is already a song with this name or name input is empty")
                     return redirect("songs")
                 
@@ -171,8 +168,9 @@ def songs(request):
                     hymn_status = False
 
                 try:
-                    new_song = Song(name=song_name, key=edit_name, frequency=new_freq, hymn=hymn_status )
+                    new_song = Song(name=song_name, key=edit_name, frequency=new_freq, hymn=hymn_status)
                     new_song.save()
+                    create_log(request, "added the song", song_name)
                     messages.success(request, "Successfully added song")
 
                 except:
@@ -185,6 +183,7 @@ def songs(request):
 
             # only delete songs with valid names that aren't None (can be invalid if typed wrong)
             if Song.objects.filter(name=delete_name).exists() and delete_name != "None":
+                create_log(request, "deleted the song", delete_name)
                 Song.objects.filter(name=delete_name).delete()
                 messages.success(request, "Successfully deleted song")
             else:
@@ -198,6 +197,7 @@ def songs(request):
             # only edit the key of songs with valid names (can be invalid if typed wrong)
             if Song.objects.filter(name=edit_name).exists():
                 Song.objects.filter(name=edit_name).update(key=edit_key)
+                create_log(request, "updated the key for", edit_name)
                 messages.success(request, "Successfully edited key")
             else:
                 messages.error(request, "Cannot edit the key of an invalid song")
@@ -210,6 +210,7 @@ def songs(request):
             # only edit the frequency of songs with valid names (can be invalid if typed wrong)
             if Song.objects.filter(name=freq_song).exists():
                 Song.objects.filter(name=freq_song).update(frequency=new_freq)
+                create_log(request, "updated the frequency for", freq_song)
                 messages.success(request, "Successfully edited frequency")
             else:
                 messages.error(request, "Cannot edit the frequency of an invalid song")
@@ -217,3 +218,45 @@ def songs(request):
         
     all_songs = Song.objects.all().order_by("name")
     return render(request, "main/songs.html", {"add_form":add_song_form, "songs":all_songs})
+
+def logs_view(request):
+    all_logs = Logs.objects.all().order_by("-date_of_action", "-id")
+    return render(request, "main/logs.html", {"all_logs": all_logs})
+
+# Helper functions
+# get random songs to be used for the edit page
+def get_random_songs(request):
+    cutoff = timezone.now().date() - timezone.timedelta(weeks=6)
+
+    # either get 2 hymns, 1 other song or get 1 hymn, 2 other songs
+    if choice([True, False]):
+        hymns = list(Song.objects.filter(Q(scheduled__lt=cutoff) | Q(scheduled__isnull=True), hymn=True).values_list("name", flat=True).order_by("?")[:2])
+        non_hymn = list(Song.objects.filter(Q(scheduled__lt=cutoff) | Q(scheduled__isnull=True), hymn=False).values_list("name", flat=True).order_by("?")[:1])
+        chosen_songs = [hymns[0], non_hymn[0], hymns[1]]
+    else:
+        hymns = list(Song.objects.filter(Q(scheduled__lt=cutoff) | Q(scheduled__isnull=True), hymn=True).values_list("name", flat=True).order_by("?")[:1])
+        non_hymn = list(Song.objects.filter(Q(scheduled__lt=cutoff) | Q(scheduled__isnull=True), hymn=False).values_list("name", flat=True).order_by("?")[:2])
+        chosen_songs = [non_hymn[0], hymns[0], [non_hymn[1]]]
+
+    # there must be 3 songs chosen, otherwise just do hymn non hymn
+    if len(chosen_songs) < 3:
+        hymns = list(Song.objects.filter(hymn=True).values_list("name", flat=True).order_by("?")[:2])
+        non_hymn = list(Song.objects.filter(hymn=False).values_list("name", flat=True).order_by("?")[:1])
+        chosen_songs = [hymns[0], non_hymn[0], hymns[1]]
+
+    # get the names of the 3 random songs
+    return JsonResponse({
+        "song1": chosen_songs[0],
+        "song2": chosen_songs[1],
+        "song3": chosen_songs[2],
+    })
+
+def create_log(request, action, obj_name):
+    # get the user, action, and date
+    user = request.user
+    date = timezone.now()
+
+    new_log = Logs(user=user, action=action, date_of_action=date, obj_name=obj_name)
+    new_log.save()
+
+    
