@@ -125,6 +125,8 @@ class EditTests(TestCase):
         self.song1 = Song.objects.create(name="song1", key="A", frequency=2, hymn=True)
         self.song2 = Song.objects.create(name="song2", key="D", frequency=4, hymn=False)
         self.song3 = Song.objects.create(name="song3", key="F", frequency=1, hymn=True)
+        self.song4 = Song.objects.create(name="song4", key="F", frequency=1, hymn=True)
+        self.song5 = Song.objects.create(name="song5", key="F", frequency=1, hymn=True)
         self.test_schedule = Schedule.objects.create(date="2025-06-18")
         
         self.test_schedule.songs.add(self.song1)
@@ -137,12 +139,42 @@ class EditTests(TestCase):
             "first_song_dropdown": "song1",
             "second_song_dropdown": "song2",
             "third_song_dropdown": "song3",
+            "fourth_song_dropdown": "",
+            "fifth_song_dropdown": "",
             "addScheduleBtn": "Add"
         }, follow=True)
         self.assertTrue(Schedule.objects.filter(date="2024-12-12").exists())
         schedule = Schedule.objects.get(date="2024-12-12")
         self.assertEqual(schedule.songs.count(), 3)
         self.assertContains(response, "Successfully added schedule")
+
+    def test_add_schedule_five_songs(self):
+        response = self.client.post(reverse("edit"), {
+            "date": "2024-12-12",
+            "first_song_dropdown": "song1",
+            "second_song_dropdown": "song2",
+            "third_song_dropdown": "song3",
+            "fourth_song_dropdown": "song4",
+            "fifth_song_dropdown": "song5",
+            "addScheduleBtn": "Add"
+        }, follow=True)
+        self.assertTrue(Schedule.objects.filter(date="2024-12-12").exists())
+        schedule = Schedule.objects.get(date="2024-12-12")
+        self.assertEqual(schedule.songs.count(), 5)
+        self.assertContains(response, "Successfully added schedule")
+
+    def test_add_schedule_five_songs_dupe(self):
+        response = self.client.post(reverse("edit"), {
+            "date": "2024-12-12",
+            "first_song_dropdown": "song1",
+            "second_song_dropdown": "song2",
+            "third_song_dropdown": "song3",
+            "fourth_song_dropdown": "song4",
+            "fifth_song_dropdown": "song4",
+            "addScheduleBtn": "Add"
+        }, follow=True)
+        self.assertFalse(Schedule.objects.filter(date="2024-12-14").exists())
+        self.assertContains(response, "Failed to add schedule: duplicate songs or schedule date already exists") 
         
     def test_delete_schedule(self):
 
@@ -168,14 +200,16 @@ class EditTests(TestCase):
 
     def test_empty_schedule(self):
         response = self.client.post(reverse("edit"), {
-            "date": "2024-12-12",
+            "date": "2024-12-14",
             "first_song_dropdown": "song1",
             "second_song_dropdown": "song2",
             "third_song_dropdown": "",
+            "fourth_song_dropdown": "",
+            "fifth_song_dropdown": "",
             "addScheduleBtn": "Add"
         }, follow=True)
-        self.assertFalse(Schedule.objects.filter(date="2024-12-12").exists())
-        self.assertContains(response, "Failed to add schedule: invalid song(s)")
+        self.assertFalse(Schedule.objects.filter(date="2024-12-14").exists())
+        self.assertContains(response, "Failed to add schedule: invalid song name(s)")
 
     def test_schedule_dupe(self):
         response = self.client.post(reverse("edit"), {
@@ -187,6 +221,7 @@ class EditTests(TestCase):
         }, follow=True)
         self.assertTrue(Schedule.objects.filter(date="2025-06-18").count() == 1)
         self.assertContains(response, "Failed to add schedule: duplicate songs or schedule date already exists") 
+
 
 class ScheduleTests(TestCase):
     

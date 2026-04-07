@@ -48,6 +48,14 @@
             <label class="form-label">Choose the third song:</label>
             <input name="third_song_dropdown" list="songs_list" class="form-control" placeholder="Choose from here">
           </div>
+          <div class="mb-3">
+            <label class="form-label">Choose the fourth song (optional):</label>
+            <input name="fourth_song_dropdown" list="songs_list" class="form-control" placeholder="Choose from here">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Choose the fifth song (optional):</label>
+            <input name="fifth_song_dropdown" list="songs_list" class="form-control" placeholder="Choose from here">
+          </div>
 
           <datalist id="songs_list">
             {% for song in songs %}

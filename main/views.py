@@ -31,16 +31,22 @@ def edit(request):
                     song1_name = request.POST.get("first_song_dropdown")
                     song2_name = request.POST.get("second_song_dropdown")
                     song3_name = request.POST.get("third_song_dropdown")
+                    song4_name = request.POST.get("fourth_song_dropdown")
+                    song5_name = request.POST.get("fifth_song_dropdown")
                     
                     # no duplicate songs or duplicate dates
                     if song1_name != song2_name and song2_name != song3_name and song1_name != song3_name \
-                        and Schedule.objects.filter(date=schedule_date).exists() == False:
+                        and Schedule.objects.filter(date=schedule_date).exists() == False \
+                        and ((song4_name != song5_name) or (song4_name == "" and song5_name == "")):
+                        
+
                         song1 = Song.objects.get(name=song1_name)
                         song2 = Song.objects.get(name=song2_name)
                         song3 = Song.objects.get(name=song3_name)
+
                         new_schedule = Schedule(date=schedule_date)
                         new_schedule.save()
-                        
+
                         new_schedule.songs.add(song1)
                         new_schedule.songs.add(song2)
                         new_schedule.songs.add(song3)
@@ -59,13 +65,31 @@ def edit(request):
                         old_scheduled_3 = Song.objects.get(name=song3_name).scheduled
                         Song.objects.filter(name=song3_name).update(last_scheduled=old_scheduled_3)
                         Song.objects.filter(name=song3_name).update(scheduled=schedule_date)
+
+                        if song4_name != "":
+                            song4 = Song.objects.get(name=song4_name)
+                            new_schedule.songs.add(song4)
+                            Song.objects.filter(name=song4_name).update(frequency=F("frequency") + 1)
+                            old_scheduled_4 = Song.objects.get(name=song4_name).scheduled
+                            Song.objects.filter(name=song4_name).update(last_scheduled=old_scheduled_4)
+                            Song.objects.filter(name=song4_name).update(scheduled=schedule_date)
+
+                        if song5_name != "":
+                            song5 = Song.objects.get(name=song5_name)
+                            new_schedule.songs.add(song5)
+                            Song.objects.filter(name=song5_name).update(frequency=F("frequency") + 1)
+                            old_scheduled_5 = Song.objects.get(name=song5_name).scheduled
+                            Song.objects.filter(name=song5_name).update(last_scheduled=old_scheduled_5)
+                            Song.objects.filter(name=song5_name).update(scheduled=schedule_date)
+
+
                         messages.success(request, "Successfully added schedule")
                         create_log(request, "added a schedule for", formatted_date)
                     else:
                         messages.error(request, "Failed to add schedule: duplicate songs or schedule date already exists")
                 
                 except:
-                    messages.error(request, "Failed to add schedule: invalid song(s)")
+                    messages.error(request, "Failed to add schedule: invalid song name(s)")
                 return redirect("edit")
         
 
